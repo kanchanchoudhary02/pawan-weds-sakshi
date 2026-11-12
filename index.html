@@ -682,11 +682,25 @@ const modal=document.getElementById('modal');
 document.getElementById('openRsvp').onclick=()=>modal.classList.add('show');
 document.getElementById('closeRsvp').onclick=()=>modal.classList.remove('show');
 modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('show')});
+// Send form information to the wedding contact on WhatsApp.
+// WhatsApp opens with a pre-filled message; the visitor must tap Send there.
+function sendToWhatsApp(message){
+  const whatsappUrl='https://wa.me/919928816538?text='+encodeURIComponent(message);
+  const link=document.createElement('a');
+  link.href=whatsappUrl;
+  link.target='_blank';
+  link.rel='noopener noreferrer';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 document.getElementById('rsvpForm').addEventListener('submit',e=>{
   e.preventDefault();
-  const msg=`🌸 RSVP – Pawan & Sakshi Wedding (26 Nov 2026)\nName: ${rName.value}\nResponse: ${rAtt.value}\nGuests: ${rG.value}${rMsg.value?'\nMessage: '+rMsg.value:''}`;
-  const a=document.createElement('a');a.href='https://wa.me/919928816538?text='+encodeURIComponent(msg);a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();
-  modal.classList.remove('show');toast('Opening WhatsApp… thank you!');
+  const msg=`🌸 RSVP – Pawan & Sakshi Wedding (26 Nov 2026)\nName: ${document.getElementById('rName').value}\nResponse: ${document.getElementById('rAtt').value}\nGuests: ${document.getElementById('rG').value}${document.getElementById('rMsg').value?'\nMessage: '+document.getElementById('rMsg').value:''}`;
+  sendToWhatsApp(msg);
+  modal.classList.remove('show');
+  toast('WhatsApp opened. Please tap Send to share your RSVP.');
 });
 
 /* ================= WISHES ================= */
@@ -701,7 +715,24 @@ function renderW(){wl=[...loadW(),...seed];document.getElementById('dots').inner
 document.getElementById('dots').addEventListener('click',e=>{if(e.target.dataset.k){wi=+e.target.dataset.k;showWish(wi)}});
 setInterval(()=>{if(wl.length>1){wi=(wi+1)%wl.length;showWish(wi)}},6000);
 renderW();
-document.getElementById('wishForm').addEventListener('submit',e=>{e.preventDefault();const a=loadW();a.unshift({n:wName.value.trim(),r:wRel.value.trim(),m:wMsg.value.trim()});saveW(a);renderW();e.target.reset();petals(16);toast('Thank you for your wish 💐')});
+document.getElementById('wishForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const name=document.getElementById('wName').value.trim();
+  const relation=document.getElementById('wRel').value.trim();
+  const wish=document.getElementById('wMsg').value.trim();
+
+  const msg=`💐 Wedding Wishes – Pawan & Sakshi (26 Nov 2026)\nName: ${name}\nRelation: ${relation || 'Not specified'}\nWish: ${wish}`;
+  sendToWhatsApp(msg);
+
+  // Keep the existing on-this-device wishes display; WhatsApp is the actual sharing step.
+  const saved=loadW();
+  saved.unshift({n:name,r:relation,m:wish});
+  saveW(saved);
+  renderW();
+  e.target.reset();
+  petals(16);
+  toast('WhatsApp opened. Please tap Send to share your wish.');
+});
 </script>
 </body>
 </html>
